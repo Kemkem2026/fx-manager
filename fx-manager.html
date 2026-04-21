@@ -659,33 +659,20 @@ async function fetchRates() {
   btn.disabled = true;
   hideError();
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 500,
-        tools: [{type:"web_search_20250305",name:"web_search"}],
-        messages: [{
-          role: "user",
-          content: `現在の為替レートを検索して、以下の通貨の対円レートをJSONのみで返してください。コードは ${state.order.join(",")} です。例: {"USD":155.23,"GBP":195.50,"EUR":168.10,...} マークダウンや説明文は不要です。`
-        }]
-      })
-    });
+    // frankfurter.app は無料・APIキー不要の為替レートAPI（JPYベース）
+    const codes = state.order.filter(c => c !== "JPY").join(",");
+    const res = await fetch(`https://api.frankfurter.app/latest?from=JPY&to=${codes}`);
     const data = await res.json();
-    const text = data.content.map(b => b.type==="text" ? b.text : "").join("");
-    const match = text.match(/\{[\s\S]*?\}/);
-    if (match) {
-      const parsed = JSON.parse(match[0]);
-      state.order.forEach(code => {
-        if (parsed[code]) state.rates[code] = parsed[code];
-      });
-      state.ratesUpdated = new Date().toISOString();
-      saveState();
-      showToast("レート更新完了");
-    } else {
-      throw new Error("parse error");
-    }
+    // data.rates は "1JPY = X外貨" なので逆数を取る
+    state.order.forEach(code => {
+      if (code === "JPY") return;
+      if (data.rates[code]) {
+        state.rates[code] = Math.round((1 / data.rates[code]) * 100) / 100;
+      }
+    });
+    state.ratesUpdated = new Date().toISOString();
+    saveState();
+    showToast("レート更新完了");
   } catch(e) {
     showError("レート取得失敗。手動で設定してください。");
   }
