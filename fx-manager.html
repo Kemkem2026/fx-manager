@@ -661,7 +661,7 @@ async function fetchRates() {
   try {
     // frankfurter.app は無料・APIキー不要の為替レートAPI（JPYベース）
     const codes = state.order.filter(c => c !== "JPY").join(",");
-    const res = await fetch(`https://api.frankfurter.dev/v1/latest?from=JPY&to=${codes}`);
+    const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=JPY&symbols=${codes}`);
     const data = await res.json();
     // data.rates は "1JPY = X外貨" なので逆数を取る
     state.order.forEach(code => {
