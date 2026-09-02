@@ -9,492 +9,472 @@
 <title>外貨管理</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #080c10;
-    --surface: #0e1419;
-    --surface2: #151c24;
-    --border: rgba(100,180,255,0.12);
-    --accent: #38bdf8;
-    --accent2: #0ea5e9;
-    --green: #4ade80;
-    --gold: #fbbf24;
-    --red: #f87171;
-    --text: #e2eaf4;
-    --muted: #64748b;
-    --muted2: #94a3b8;
-    --radius: 10px;
-    --font-mono: 'DM Mono', monospace;
-    --font-jp: 'Noto Sans JP', sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-jp);
-    min-height: 100vh;
-    padding-bottom: 90px;
-    overscroll-behavior: none;
-  }
-
-  /* Background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(56,189,248,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 30% at 10% 80%, rgba(74,222,128,0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Header */
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(8,12,16,0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 16px 10px;
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-  .header-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-box {
-    background: var(--accent);
-    color: #000;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 13px;
-    padding: 4px 8px;
-    letter-spacing: 1px;
-  }
-  .app-title { font-size: 16px; font-weight: 900; letter-spacing: 1px; }
-  .app-sub { font-size: 9px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); }
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-  .refresh-btn {
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    letter-spacing: 1px;
-  }
-  .refresh-btn:active { background: var(--accent); color: #000; }
-  .updated-at { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
-
-  /* Grand total bar */
-  .grand-bar {
-    background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(74,222,128,0.06));
-    border: 1px solid rgba(56,189,248,0.25);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin: 12px 12px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .grand-label { font-size: 10px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); margin-bottom: 2px; }
-  .grand-jpy { font-size: 28px; font-weight: 900; font-family: var(--font-mono); letter-spacing: -1px; }
-  .grand-usd { font-size: 12px; color: var(--muted2); font-family: var(--font-mono); }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: rgba(8,12,16,0.6);
-    margin-top: 12px;
-  }
-  .tab {
-    flex: 1;
-    padding: 11px 0;
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    font-family: var(--font-jp);
-    font-size: 12px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(56,189,248,0.04); }
-
-  /* Content */
-  .content { padding: 14px 12px; position: relative; z-index: 1; }
-
-  /* Currency cards */
-  .currency-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .currency-card:active { border-color: rgba(56,189,248,0.3); }
-  .card-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .card-flag { font-size: 22px; line-height: 1; }
-  .card-info { flex: 1; }
-  .card-code { font-size: 15px; font-weight: 900; font-family: var(--font-mono); letter-spacing: 1px; }
-  .card-name { font-size: 11px; color: var(--muted2); margin-top: 1px; }
-  .card-pct {
-    font-size: 11px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-  .card-body { padding: 12px 14px; }
-  .card-amount { font-size: 24px; font-weight: 900; font-family: var(--font-mono); letter-spacing: -0.5px; margin-bottom: 2px; }
-  .card-jpy { font-size: 13px; color: var(--muted2); margin-bottom: 4px; }
-  .card-rate { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 10px; }
-  .progress-bg { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-bottom: 10px; }
-  .progress-fill { height: 3px; border-radius: 2px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
-  .bills-row { display: flex; flex-wrap: wrap; gap: 5px; }
-  .bill-chip {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: var(--muted2);
-    font-family: var(--font-mono);
-  }
-
-  /* Bottom nav */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0; right: 0;
-    background: rgba(8,12,16,0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 200;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .nav-btn {
-    flex: 1;
-    padding: 10px 0 8px;
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    font-family: var(--font-jp);
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    transition: color 0.2s;
-  }
-  .nav-btn.active { color: var(--accent); }
-  .nav-icon { font-size: 20px; }
-
-  /* Detail view */
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .section-title { font-size: 11px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); }
-  .section-total { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
-  .section-jpy { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
-
-  /* Bill table */
-  .bill-table { width: 100%; border-collapse: collapse; }
-  .bill-table th {
-    padding: 6px 10px;
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    font-family: var(--font-mono);
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  .bill-table td { padding: 9px 10px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-  .bill-table tr:last-child td { border-bottom: none; }
-  .denom-cell { font-family: var(--font-mono); font-weight: 500; }
-  .subtotal-cell { font-family: var(--font-mono); color: var(--muted2); }
-
-  /* Count stepper */
-  .stepper { display: flex; align-items: center; gap: 0; }
-  .step-btn {
-    width: 32px; height: 32px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 4px;
-    transition: background 0.15s;
-    font-family: var(--font-mono);
-  }
-  .step-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
-  .step-input {
-    width: 52px;
-    height: 32px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    border-left: none; border-right: none;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    text-align: center;
-    outline: none;
-  }
-
-  /* Action buttons */
-  .action-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 4px;
-    transition: background 0.15s;
-    font-size: 16px;
-    color: var(--muted2);
-  }
-  .action-btn:active { background: rgba(255,255,255,0.08); }
-  .action-btn.danger { color: var(--red); }
-
-  /* Add bill row */
-  .add-denom-section {
-    padding: 10px 14px;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .add-denom-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; font-family: var(--font-mono); }
-  .denom-btn {
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.2);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .denom-btn:active { background: var(--accent); color: #000; }
-  .denom-input-row {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-top: 6px;
-    width: 100%;
-  }
-  .denom-custom-input {
-    flex: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    outline: none;
-  }
-  .confirm-btn {
-    background: var(--accent);
-    border: none;
-    color: #000;
-    font-family: var(--font-jp);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  /* Rates */
-  .rate-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 10px;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .rate-flag { font-size: 20px; }
-  .rate-code { font-family: var(--font-mono); font-weight: 700; font-size: 15px; width: 40px; }
-  .rate-eq { font-size: 13px; color: var(--muted); margin: 0 4px; }
-  .rate-input {
-    flex: 1;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 16px;
-    padding: 8px 10px;
-    border-radius: 4px;
-    outline: none;
-  }
-  .rate-input:focus { border-color: var(--accent); }
-  .rate-jpy-label { font-size: 12px; color: var(--muted); }
-  .rate-result { font-size: 11px; color: var(--green); font-family: var(--font-mono); margin-top: 4px; }
-
-  /* Add currency modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 300;
-    display: flex;
-    align-items: flex-end;
-    backdrop-filter: blur(4px);
-  }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius) var(--radius) 0 0;
-    width: 100%;
-    padding: 20px 16px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-  }
-  .modal-title { font-size: 14px; font-weight: 700; letter-spacing: 2px; margin-bottom: 16px; color: var(--accent); font-family: var(--font-mono); }
-  .form-row { margin-bottom: 12px; }
-  .form-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 5px; font-family: var(--font-mono); }
-  .form-input {
-    width: 100%;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 15px;
-    padding: 10px 12px;
-    border-radius: 4px;
-    outline: none;
-  }
-  .form-input:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-  .cancel-btn {
-    flex: 1;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted2);
-    font-family: var(--font-jp);
-    font-size: 14px;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .submit-btn {
-    flex: 2;
-    background: var(--accent);
-    border: none;
-    color: #000;
-    font-family: var(--font-jp);
-    font-size: 14px;
-    font-weight: 700;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  /* Color presets */
-  .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .color-swatch {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    cursor: pointer;
-  }
-  .color-swatch.selected { border-color: #fff; transform: scale(1.15); }
-
-  /* Suggested currencies */
-  .suggest-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-  .suggest-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .suggest-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--green);
-    color: #000;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 8px 20px;
-    border-radius: 20px;
-    z-index: 500;
-    opacity: 0;
-    transition: opacity 0.3s;
-    letter-spacing: 1px;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; }
-
-  /* Delete zone */
-  .delete-currency-btn {
-    background: rgba(248,113,113,0.08);
-    border: 1px solid rgba(248,113,113,0.2);
-    color: var(--red);
-    font-family: var(--font-jp);
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 8px 14px 12px;
-    display: block;
-    width: calc(100% - 28px);
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 0; }
-
-  /* Error */
-  .error-bar {
-    background: rgba(248,113,113,0.15);
-    color: var(--red);
-    font-size: 11px;
-    padding: 6px 16px;
-    letter-spacing: 0.5px;
-  }
+:root {
+  --bg: #080c10;
+  --surface: #0e1419;
+  --surface2: #151c24;
+  --border: rgba(100,180,255,0.12);
+  --accent: #38bdf8;
+  --accent2: #0ea5e9;
+  --green: #4ade80;
+  --gold: #fbbf24;
+  --red: #f87171;
+  --text: #e2eaf4;
+  --muted: #64748b;
+  --muted2: #94a3b8;
+  --radius: 10px;
+  --font-mono: 'DM Mono', monospace;
+  --font-jp: 'Noto Sans JP', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-jp);
+  min-height: 100vh;
+  padding-bottom: 90px;
+  overscroll-behavior: none;
+}
+/* Background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 10% 80%, rgba(74,222,128,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,12,16,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 10px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-box {
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 13px;
+  padding: 4px 8px;
+  letter-spacing: 1px;
+}
+.app-title { font-size: 16px; font-weight: 900; letter-spacing: 1px; }
+.app-sub { font-size: 9px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.refresh-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.refresh-btn:active { background: var(--accent); color: #000; }
+.updated-at { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+/* Grand total bar */
+.grand-bar {
+  background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(74,222,128,0.06));
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.grand-label { font-size: 10px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); margin-bottom: 2px; }
+.grand-jpy { font-size: 28px; font-weight: 900; font-family: var(--font-mono); letter-spacing: -1px; }
+.grand-usd { font-size: 12px; color: var(--muted2); font-family: var(--font-mono); }
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,12,16,0.6);
+  margin-top: 12px;
+}
+.tab {
+  flex: 1;
+  padding: 11px 0;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-jp);
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(56,189,248,0.04); }
+/* Content */
+.content { padding: 14px 12px; position: relative; z-index: 1; }
+/* Currency cards */
+.currency-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.currency-card:active { border-color: rgba(56,189,248,0.3); }
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.card-flag { font-size: 22px; line-height: 1; }
+.card-info { flex: 1; }
+.card-code { font-size: 15px; font-weight: 900; font-family: var(--font-mono); letter-spacing: 1px; }
+.card-name { font-size: 11px; color: var(--muted2); margin-top: 1px; }
+.card-pct {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.card-body { padding: 12px 14px; }
+.card-amount { font-size: 24px; font-weight: 900; font-family: var(--font-mono); letter-spacing: -0.5px; margin-bottom: 2px; }
+.card-jpy { font-size: 13px; color: var(--muted2); margin-bottom: 4px; }
+.card-rate { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 10px; }
+.progress-bg { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-bottom: 10px; }
+.progress-fill { height: 3px; border-radius: 2px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+.bills-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.bill-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+}
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: rgba(8,12,16,0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1;
+  padding: 10px 0 8px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-jp);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-icon { font-size: 20px; }
+/* Detail view */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.section-title { font-size: 11px; color: var(--accent); letter-spacing: 3px; font-family: var(--font-mono); }
+.section-total { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.section-jpy { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+/* Bill table */
+.bill-table { width: 100%; border-collapse: collapse; }
+.bill-table th {
+  padding: 6px 10px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  font-family: var(--font-mono);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.bill-table td { padding: 9px 10px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.bill-table tr:last-child td { border-bottom: none; }
+.denom-cell { font-family: var(--font-mono); font-weight: 500; }
+.subtotal-cell { font-family: var(--font-mono); color: var(--muted2); }
+/* Count stepper */
+.stepper { display: flex; align-items: center; gap: 0; }
+.step-btn {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s;
+  font-family: var(--font-mono);
+}
+.step-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
+.step-input {
+  width: 52px;
+  height: 32px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-left: none; border-right: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+/* Action buttons */
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  font-size: 16px;
+  color: var(--muted2);
+}
+.action-btn:active { background: rgba(255,255,255,0.08); }
+.action-btn.danger { color: var(--red); }
+/* Add bill row */
+.add-denom-section {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.add-denom-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; font-family: var(--font-mono); }
+.denom-btn {
+  background: rgba(56,189,248,0.08);
+  border: 1px solid rgba(56,189,248,0.2);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.denom-btn:active { background: var(--accent); color: #000; }
+.denom-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  width: 100%;
+}
+.denom-custom-input {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  outline: none;
+}
+.confirm-btn {
+  background: var(--accent);
+  border: none;
+  color: #000;
+  font-family: var(--font-jp);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Rates */
+.rate-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rate-flag { font-size: 20px; }
+.rate-code { font-family: var(--font-mono); font-weight: 700; font-size: 15px; width: 40px; }
+.rate-eq { font-size: 13px; color: var(--muted); margin: 0 4px; }
+.rate-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  outline: none;
+}
+.rate-input:focus { border-color: var(--accent); }
+.rate-jpy-label { font-size: 12px; color: var(--muted); }
+.rate-result { font-size: 11px; color: var(--green); font-family: var(--font-mono); margin-top: 4px; }
+/* Add currency modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%;
+  padding: 20px 16px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.modal-title { font-size: 14px; font-weight: 700; letter-spacing: 2px; margin-bottom: 16px; color: var(--accent); font-family: var(--font-mono); }
+.form-row { margin-bottom: 12px; }
+.form-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 5px; font-family: var(--font-mono); }
+.form-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  outline: none;
+}
+.form-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.cancel-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  font-family: var(--font-jp);
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.submit-btn {
+  flex: 2;
+  background: var(--accent);
+  border: none;
+  color: #000;
+  font-family: var(--font-jp);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Color presets */
+.color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-swatch {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.color-swatch.selected { border-color: #fff; transform: scale(1.15); }
+/* Suggested currencies */
+.suggest-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.suggest-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.suggest-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
+/* Toast */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 20px;
+  z-index: 500;
+  opacity: 0;
+  transition: opacity 0.3s;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+/* Delete zone */
+.delete-currency-btn {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
+  color: var(--red);
+  font-family: var(--font-jp);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 8px 14px 12px;
+  display: block;
+  width: calc(100% - 28px);
+}
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; }
+/* Error */
+.error-bar {
+  background: rgba(248,113,113,0.15);
+  color: var(--red);
+  font-size: 11px;
+  padding: 6px 16px;
+  letter-spacing: 0.5px;
+}
 </style>
 </head>
 <body>
@@ -518,6 +498,7 @@
       <div class="grand-label">TOTAL ASSETS</div>
       <div class="grand-jpy" id="grandJPY">—</div>
       <div class="grand-usd" id="grandUSD">—</div>
+      <div class="grand-usd" id="grandSpread" style="color:var(--gold);margin-top:2px"></div>
     </div>
   </div>
 </div>
@@ -602,6 +583,8 @@ const DEFAULT_DATA = {
   order: ["USD","GBP","EUR"]
 };
 
+const EXCHANGE_SPREAD = 0.05; // 両替時に想定するスプレッド(5%)
+
 const COLORS = ["#4ade80","#60a5fa","#fbbf24","#f472b6","#a78bfa","#fb923c","#34d399","#f87171","#38bdf8","#e879f9"];
 const SUGGEST = [
   {code:"AUD",label:"豪ドル",symbol:"A$",flag:"🇦🇺"},
@@ -659,10 +642,12 @@ async function fetchRates() {
   btn.disabled = true;
   hideError();
   try {
-    // frankfurter.app は無料・APIキー不要の為替レートAPI（JPYベース）
+    // frankfurter.dev は無料・APIキー不要の為替レートAPI(JPYベース)
     const codes = state.order.filter(c => c !== "JPY").join(",");
     const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=JPY&symbols=${codes}`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
+    if (!data.rates) throw new Error("rates missing");
     // data.rates は "1JPY = X外貨" なので逆数を取る
     state.order.forEach(code => {
       if (code === "JPY") return;
@@ -694,6 +679,7 @@ function renderGrand() {
   const usd = grandUSD();
   document.getElementById("grandJPY").textContent = jpy ? fmtJPY(jpy) : "—";
   document.getElementById("grandUSD").textContent = usd ? `≈ $${fmtFX(usd)} USD` : "";
+  document.getElementById("grandSpread").textContent = jpy ? `両替目安(−5%): ${fmtJPY(jpy * (1 - EXCHANGE_SPREAD))}` : "";
   if (state.ratesUpdated) {
     const d = new Date(state.ratesUpdated);
     document.getElementById("updatedAt").textContent = d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -722,7 +708,7 @@ function renderDashboard() {
       </div>
       <div class="card-body">
         <div class="card-amount"><span style="color:${info.color}">${info.symbol}</span>${amt.toLocaleString()}</div>
-        <div class="card-jpy">${jpy ? fmtJPY(jpy) : "—"}</div>
+        <div class="card-jpy">${jpy ? fmtJPY(jpy) : "—"}${jpy ? ` <span style="color:var(--gold);font-size:10px">(目安 ${fmtJPY(jpy*(1-EXCHANGE_SPREAD))})</span>` : ""}</div>
         <div class="card-rate">${rate ? `1${info.symbol} = ¥${fmtFX(rate)}` : "レート未設定"}</div>
         <div class="progress-bg"><div class="progress-fill" style="width:${pct}%;background:${info.color}"></div></div>
         <div class="bills-row">${activeBills.map(b=>`<span class="bill-chip">${info.symbol}${b.denom}×${b.count}</span>`).join("")}</div>
@@ -739,7 +725,6 @@ function renderDetail() {
     const jpy = getTotalJPY(code);
     const existingDenoms = info.bills.map(b=>b.denom);
     const suggestDenoms = [1,2,5,10,20,50,100,200,500,1000].filter(d=>!existingDenoms.includes(d));
-
     const rows = info.bills.map((b,idx) => `
       <tr>
         <td class="denom-cell" style="color:${info.color}">${info.symbol}${b.denom}</td>
@@ -753,11 +738,9 @@ function renderDetail() {
         <td class="subtotal-cell">${info.symbol}${(b.denom*b.count).toLocaleString()}</td>
         <td><button class="action-btn danger" onclick="removeBill('${code}',${idx})">🗑</button></td>
       </tr>`).join("");
-
     const suggestBtns = suggestDenoms.slice(0,6).map(d=>
       `<button class="denom-btn" onclick="addBill('${code}',${d})">${info.symbol}${d}</button>`
     ).join("");
-
     return `<div class="currency-card" style="margin-bottom:16px;border-color:${info.color}33">
       <div class="section-header">
         <div style="display:flex;align-items:center;gap:8px">
@@ -783,7 +766,7 @@ function renderDetail() {
           <button class="confirm-btn" onclick="addCustomBill('${code}')">追加</button>
         </div>
       </div>
-      <button class="delete-currency-btn" onclick="deleteCurrency('${code}')">🗑 ${info.label}（${code}）を削除</button>
+      <button class="delete-currency-btn" onclick="deleteCurrency('${code}')">🗑 ${info.label}(${code})を削除</button>
     </div>`;
   }).join("");
 }
@@ -817,13 +800,11 @@ function stepCount(code, idx, delta) {
   saveState();
   renderAll();
 }
-
 function setCount(code, idx, val) {
   state.holdings[code].bills[idx].count = Math.max(0, parseInt(val) || 0);
   saveState();
   renderAll();
 }
-
 function addBill(code, denom) {
   const bills = state.holdings[code].bills;
   if (bills.find(b => b.denom === denom)) return;
@@ -833,7 +814,6 @@ function addBill(code, denom) {
   renderAll();
   showToast(`${state.holdings[code].symbol}${denom} を追加`);
 }
-
 function addCustomBill(code) {
   const input = document.getElementById(`customDenom_${code}`);
   const denom = parseInt(input.value);
@@ -841,22 +821,19 @@ function addCustomBill(code) {
   addBill(code, denom);
   input.value = "";
 }
-
 function removeBill(code, idx) {
   if (!confirm("この紙幣種を削除しますか？")) return;
   state.holdings[code].bills.splice(idx, 1);
   saveState();
   renderAll();
 }
-
 function setRate(code, val) {
   state.rates[code] = parseFloat(val) || 0;
   saveState();
   renderAll();
 }
-
 function deleteCurrency(code) {
-  if (!confirm(`${state.holdings[code].label}（${code}）を削除しますか？`)) return;
+  if (!confirm(`${state.holdings[code].label}(${code})を削除しますか？`)) return;
   delete state.holdings[code];
   delete state.rates[code];
   state.order = state.order.filter(c => c !== code);
@@ -868,48 +845,40 @@ function deleteCurrency(code) {
 // ===== ADD CURRENCY =====
 function openAddCurrency() {
   selectedColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-
   // Suggest row
   const existing = state.order;
   const suggests = SUGGEST.filter(s => !existing.includes(s.code));
   document.getElementById("suggestRow").innerHTML = suggests.map(s =>
     `<button class="suggest-btn" onclick="fillSuggest('${s.code}','${s.label}','${s.symbol}','${s.flag}')">${s.flag} ${s.code}</button>`
   ).join("");
-
   // Color row
   document.getElementById("colorRow").innerHTML = COLORS.map(c =>
     `<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
   ).join("");
-
   document.getElementById("newCode").value = "";
   document.getElementById("newName").value = "";
   document.getElementById("newSymbol").value = "";
   document.getElementById("newFlag").value = "";
   document.getElementById("addModal").style.display = "flex";
 }
-
 function fillSuggest(code, label, symbol, flag) {
   document.getElementById("newCode").value = code;
   document.getElementById("newName").value = label;
   document.getElementById("newSymbol").value = symbol;
   document.getElementById("newFlag").value = flag;
 }
-
 function pickColor(c) {
   selectedColor = c;
   document.querySelectorAll(".color-swatch").forEach(el => {
     el.classList.toggle("selected", el.style.background === c || el.style.backgroundColor === c);
   });
 }
-
 function closeModal() {
   document.getElementById("addModal").style.display = "none";
 }
-
 function closeModalOnOverlay(e) {
   if (e.target === document.getElementById("addModal")) closeModal();
 }
-
 function addCurrency() {
   const code = document.getElementById("newCode").value.trim().toUpperCase();
   const label = document.getElementById("newName").value.trim();
